@@ -1,0 +1,7 @@
+{
+  "default": "meexo",
+  "meexo": {
+  	"key": "YOUR STACKMOB APP PUBLIC KEY",
+  	"secret": "YOUR STACKMOB APP SECRET KEY"
+  }
+}
