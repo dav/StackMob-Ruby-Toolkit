@@ -23,7 +23,7 @@ the rails console, but it still beats doing everything through a browser or iOS 
 
 Dump all user instances in the database:
 
-		$ ruby stack_mob.rb -m user -r -a
+		$ ruby stack_mob.rb --model user --read --all
 		[{"createddate"=>1305304396910,
 		  "user_id"=>"4dcd5d4caf985c0c24050345",
 		  "lastmoddate"=>1305304396910,
