@@ -21,6 +21,23 @@ the rails console, but it still beats doing everything through a browser or iOS 
 
 ## Example
 
+Dump app api
+
+		$ ruby stack_mob.rb --listapi
+    {"user"=>
+      {"id"=>"user",
+       "type"=>"object",
+       "properties"=>
+        {"profile"=>{"optional"=>true, "type"=>"string", "$ref"=>"profile"},
+         "createddate"=>
+          {"format"=>"utcmillisec",
+           "title"=>"Created Timestamp",
+           "indexed"=>true,
+           "readonly"=>true,
+           "type"=>"integer",
+           "description"=>"UTC time when the entity was created"},
+           ....
+
 Dump all user instances in the database:
 
 		$ ruby stack_mob.rb --model user --read --all
@@ -46,7 +63,7 @@ Delete all of the user instances (note, requires confirmation):
 
 Create a new user instance. The file user.json contains {"login": "script_user","password": "password"}:
 
-    $ ruby stack_mob.rb -m user -c user.json 
+    $ ruby stack_mob.rb -m user --create user.json 
     {"createddate"=>1305733013837,
      "user_id"=>"4dd3e795af985c0c25050345",
      "lastmoddate"=>1305733013837,
