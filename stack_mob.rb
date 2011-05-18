@@ -29,6 +29,11 @@ optparse = OptionParser.new do|opts|
     options[:verbose] = true
   end
 
+  options[:listapi] = false
+  opts.on( '-l', '--listapi', 'The StackMob api for this app' ) do
+    options[:listapi] = true
+  end
+
   options[:model] = nil
   opts.on( '-m', '--model thing', 'The StackMob model name' ) do |name|
     options[:model] = name
@@ -46,6 +51,11 @@ optparse = OptionParser.new do|opts|
   options[:read] = false
   opts.on( '-r', '--read', 'Read action' ) do
     options[:read] = true
+  end
+
+  options[:create] = nil
+  opts.on( '-c', '--create json_file', 'Create action, using specified file for instance values' ) do |json_file|
+    options[:create] = json_file
   end
 
   options[:delete] = false
@@ -72,15 +82,27 @@ sm = StackMobOauth.new(config)
 
 if options[:listapi]
   result = sm.get 'listapi'
+  pp result
 else
-  unless options[:read] || options[:delete]
-    puts "Need to specify an action (read or delete)"
+  unless options[:read] || options[:delete] || options[:create]
+    puts "Need to specify an action option (read, delete or create)"
     exit
   end
 
   if options[:read]
     result = sm.get(options[:model], options[:id])
     pp result
+  elsif options[:create]
+    begin
+      File.open(options[:create], 'r') do |file|
+        json = file.readlines.join
+        result = sm.post(options[:model], json)
+        pp result
+      end
+    rescue Exception => ex
+      p ex
+      exit
+    end
   elsif options[:delete]
     if options[:id] != :all
       result = sm.delete(options[:model], options[:id])

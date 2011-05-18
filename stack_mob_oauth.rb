@@ -20,15 +20,19 @@ class StackMobOauth
   
   def model_path(model, model_id=nil)
     path = "/api/1/#{@appname}/#{model}"
-    unless model_id == :all
+    if model_id && model_id != :all
       path = path + "?#{model}_id=#{model_id}"
     end
     path
   end
 
-  def request(method, model, model_id)
-    model_path = model_path(model, model_id)
-    response = @access_token.send(method, model_path)
+  def request(method, model, opts={})
+    model_path = model_path(model, opts[:model_id])
+    if opts[:json]
+      response = @access_token.send(method, model_path, opts[:json],{'Content-type'=>'application/json'})
+    else
+      response = @access_token.send(method, model_path)
+    end
     if response.is_a? Net::HTTPOK
       if (response.body && response.body.length>0)
         return JSON.parse(response.body)
@@ -50,11 +54,15 @@ class StackMobOauth
     end
   end
       
-  def get(model_or_action, model_id)
-    request(:get, model_or_action, model_id)
+  def get(model_or_action, model_id=nil)
+    request(:get, model_or_action, :model_id => model_id)
+  end
+
+  def post(model_or_action, instance_json)
+    request(:post, model_or_action, :json => instance_json)
   end
 
   def delete(model, model_id)
-    request(:delete, model, model_id)
+    request(:delete, model, :model_id => model_id)
   end
 end
