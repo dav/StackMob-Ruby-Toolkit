@@ -44,6 +44,16 @@ Delete all of the user instances (note, requires confirmation):
 		Deleting 4dcd5d4caf985c0c24050345
 		Deleting 4dcd5d5b36d9d994dde82efb
 
+Create a new user instance. The file user.json contains {"login": "script_user","password": "password"}:
+
+    $ ruby stack_mob.rb -m user -c user.json 
+    {"createddate"=>1305733013837,
+     "user_id"=>"4dd3e795af985c0c25050345",
+     "lastmoddate"=>1305733013837,
+     "password"=>"password",
+     "login"=>"script_user"}
+
+
 
 ## License
 
