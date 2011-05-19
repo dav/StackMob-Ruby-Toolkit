@@ -3,8 +3,9 @@ require 'optparse'
 require 'erb'
 require 'rubygems'
 
+$LOAD_PATH << File.dirname(__FILE__)
 require 'stack_mob_config'
-require "stack_mob_oauth"
+require 'stack_mob_oauth'
 
 #require 'ruby-debug'
 require "pp"
@@ -134,7 +135,7 @@ class StackMobUtilityScript
       exit
     end
 
-    config = StackMobConfig.new
+    config = StackMobConfig.new( File.join(File.dirname(__FILE__),'config.json') )
 
     sm = StackMobOauth.new(config, @options[:verbose])
 

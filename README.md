@@ -22,6 +22,7 @@ the rails console, but it still beats doing everything through a browser or iOS 
 Note: for json files used to specify parameters, they can contain embedded ruby if
 they end in .erb:
 
+    $ cat user.json.erb
     {
       "login": "script_user_<%= Time.now.to_i-1305800000 %>",
       "password": "password"
