@@ -96,7 +96,7 @@ end
 
 config = StackMobConfig.new
 
-sm = StackMobOauth.new(config)
+sm = StackMobOauth.new(config, options[:verbose])
 
 if options[:listapi]
   result = sm.get 'listapi'

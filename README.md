@@ -4,10 +4,10 @@
 
 A very simple and not very clever set of tools for working with StackMob.
 
-Warning this is something I whipped up for my own use. Use at your own risk.
+_Warning: this is something I whipped up for my own use. Use at your own risk._
 
-Currently, this is a set of ruby scripts that allows you to read and delete your StackMob
-data from the command line.
+Currently, this is a set of ruby scripts that allows you to create, read and delete your 
+StackMob data from the command line.
 
 To use it, first copy config.json.example to config.json and set your app and key information.
 
@@ -19,7 +19,7 @@ I need to add more command line options to allow you to specify the app at runti
 Eventually I'd like to make this work more like manipulating your ActiveRecord objects from
 the rails console, but it still beats doing everything through a browser or iOS app.
 
-Note, for json files used to specify parameters, they can contain embedded ruby if
+Note: for json files used to specify parameters, they can contain embedded ruby if
 they end in .erb:
 
     {

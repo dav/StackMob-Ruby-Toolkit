@@ -5,15 +5,14 @@ require "json"
 require 'stack_mob_config'
 
 class StackMobOauth
-  def initialize(config)
+  def initialize(config, debug = false)
     @appname = config.appname
     
     @consumer = OAuth::Consumer.new(config.key, config.secret, {
         :site=>"http://meexo.stackmob.com"
         })
 
-    # For debugging the http request
-    #@consumer.http.set_debug_output($stderr)
+    @consumer.http.set_debug_output($stderr) if debug
 
     @access_token = OAuth::AccessToken.new @consumer
   end
