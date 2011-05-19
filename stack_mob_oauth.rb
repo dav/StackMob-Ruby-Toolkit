@@ -2,13 +2,13 @@ require 'rubygems'
 require 'oauth'
 require "json"
 
+require 'stack_mob_config'
+
 class StackMobOauth
   def initialize(config)
-    @appname = config["default"]
-    key = config[@appname]["key"]
-    secret = config[@appname]["secret"]
+    @appname = config.appname
     
-    @consumer = OAuth::Consumer.new(key,secret, {
+    @consumer = OAuth::Consumer.new(config.key, config.secret, {
         :site=>"http://meexo.stackmob.com"
         })
 

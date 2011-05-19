@@ -1,17 +1,11 @@
 #!/usr/bin/env ruby
 require 'optparse'
+require 'rubygems'
  
+require 'stack_mob_config'
 require "stack_mob_oauth"
-require "json"
-require "pp"
 
-def read_config(configfile='config.json')
-  config = {}
-  File.open(configfile, 'r') do |file|
-    config = JSON.parse file.readlines.join
-  end
-  return config
-end
+require "pp"
 
 # This hash will hold all of the options
 # parsed from the command-line by
@@ -76,7 +70,7 @@ unless options[:model] || options[:listapi]
   exit
 end
 
-config = read_config
+config = StackMobConfig.new
 
 sm = StackMobOauth.new(config)
 
