@@ -31,6 +31,12 @@ they end in .erb:
 
 Ruby gems: json, oauth
 
+## Optional
+
+The term-ansicolor gem allows colored output.
+
+http://flori.github.com/term-ansicolor/
+
 ## Example
 
 Show options:
