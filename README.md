@@ -2,7 +2,7 @@
 
 ## About
 
-A very simple and not very clever set of tools for working with StackMob.
+A not very clever set of tools for working with StackMob.
 
 _Warning: this is something I whipped up for my own use. Use at your own risk._
 
@@ -27,9 +27,17 @@ they end in .erb:
       "password": "password"
     }
 
+## Requires
+
+Ruby gems: json, oauth
+
 ## Example
 
-Dump app api
+Show options:
+
+$ ruby stack_mob.rb -h
+
+Dump app api:
 
 		$ ruby stack_mob.rb --listapi
     {"user"=>
