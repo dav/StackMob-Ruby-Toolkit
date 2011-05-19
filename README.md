@@ -52,6 +52,9 @@ Dump all user instances in the database:
 		  "password"=>"tokyo",
 		  "login"=>"mie"}]
 
+Read a specific user instance in the database:
+
+		$ ruby stack_mob.rb --model user --r -i 4dcd5d4caf985c0c24050345
 
 Delete all of the user instances (note, requires confirmation):
 
@@ -63,14 +66,11 @@ Delete all of the user instances (note, requires confirmation):
 
 Create a new user instance. The file user.json contains {"login": "script_user","password": "password"}:
 
-    $ ruby stack_mob.rb -m user --create user.json 
-    {"createddate"=>1305733013837,
-     "user_id"=>"4dd3e795af985c0c25050345",
-     "lastmoddate"=>1305733013837,
-     "password"=>"password",
-     "login"=>"script_user"}
+    $ ruby stack_mob.rb -m user --create --json user.json 
 
+Hit a custom method. The file custom_1.json contains the necessary params for that method:
 
+      $ ruby stack_mob.rb --method my_method --json custom_1.json 
 
 ## License
 

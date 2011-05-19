@@ -5,6 +5,7 @@ require 'rubygems'
 require 'stack_mob_config'
 require "stack_mob_oauth"
 
+#require 'ruby-debug'
 require "pp"
 
 # This hash will hold all of the options
@@ -47,14 +48,31 @@ optparse = OptionParser.new do|opts|
     options[:read] = true
   end
 
-  options[:create] = nil
-  opts.on( '-c', '--create json_file', 'Create action, using specified file for instance values' ) do |json_file|
-    options[:create] = json_file
+  options[:create] = false
+  opts.on( '-c', '--create', 'Create action, combine with --json' ) do
+    options[:create] = true
   end
 
   options[:delete] = false
   opts.on( '-d', '--delete', 'Delete action' ) do
     options[:delete] = true
+  end
+
+  options[:method] = nil
+  opts.on( '-M', '--method method', 'Custom method action' ) do |method|
+    options[:method] = method
+  end
+
+  options[:json] = nil
+  opts.on( '-j', '--json file', 'JSON file' ) do |file|
+    begin
+      File.open(file, 'r') do |f|
+        options[:json] = f.readlines.join
+      end
+    rescue Exception => ex
+      p ex
+      exit
+    end
   end
 
   opts.on( '-h', '--help', 'Display this screen' ) do
@@ -65,8 +83,8 @@ end
 
 optparse.parse!
 
-unless options[:model] || options[:listapi]
-  puts "Not enough options specified. Try -h"
+unless options[:model] || options[:listapi] || [:method]
+  puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
   exit
 end
 
@@ -77,6 +95,9 @@ sm = StackMobOauth.new(config)
 if options[:listapi]
   result = sm.get 'listapi'
   pp result
+elsif options[:method]
+  result = sm.get(options[:method], :json => options[:json])
+  pp result
 else
   unless options[:read] || options[:delete] || options[:create]
     puts "Need to specify an action option (read, delete or create)"
@@ -84,25 +105,17 @@ else
   end
 
   if options[:read]
-    result = sm.get(options[:model], options[:id])
+    result = sm.get(options[:model], :model_id => options[:id])
     pp result
   elsif options[:create]
-    begin
-      File.open(options[:create], 'r') do |file|
-        json = file.readlines.join
-        result = sm.post(options[:model], json)
-        pp result
-      end
-    rescue Exception => ex
-      p ex
-      exit
-    end
+    result = sm.post(options[:model], :json => options[:json])
+    pp result
   elsif options[:delete]
     if options[:id] != :all
-      result = sm.delete(options[:model], options[:id])
+      result = sm.delete(options[:model], :model_id => options[:id])
       pp result unless result.nil?
     else
-      instances = sm.get(options[:model], :all)
+      instances = sm.get(options[:model], :model_id => :all)
       puts "Are you sure you want to delete all #{instances.size} instances of #{options[:model]}? (yes|NO)"
       user_response = STDIN.gets.strip
       user_response = '[nothing]' if user_response == ''
@@ -110,7 +123,7 @@ else
         instances.each do |instance|
           model_id = instance["#{options[:model]}_id"]
           puts "Deleting #{model_id}"
-          result = sm.delete(options[:model], model_id)
+          result = sm.delete(options[:model], :model_id => model_id)
           pp result unless result.nil?
         end
       else

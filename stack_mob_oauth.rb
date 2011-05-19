@@ -18,51 +18,65 @@ class StackMobOauth
     @access_token = OAuth::AccessToken.new @consumer
   end
   
-  def model_path(model, model_id=nil)
+  def model_path(method, model, opts)
+    model_id = opts[:model_id]
     path = "/api/1/#{@appname}/#{model}"
-    if model_id && model_id != :all
-      path = path + "?#{model}_id=#{model_id}"
+    
+    if method == :get || method == :delete
+      if model_id && model_id != :all
+        path = path + "?#{model}_id=#{model_id}"
+      elsif opts[:json]
+        params = JSON.parse(opts[:json])
+        url_params = URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
+        path = path + "?" + url_params
+      end
     end
     path
   end
 
   def request(method, model, opts={})
-    model_path = model_path(model, opts[:model_id])
-    if opts[:json]
-      response = @access_token.send(method, model_path, opts[:json],{'Content-type'=>'application/json'})
-    else
-      response = @access_token.send(method, model_path)
+    model_path = model_path(method, model, opts)
+    
+    headers = {}
+    headers['Content-type' => 'application/json'] if opts[:json]
+    
+    response = case method
+    when :get
+      @access_token.get(model_path, headers)
+    when :delete
+      @access_token.delete(model_path, headers)
+    when :create
+      post_data = opts[:json]
+      @access_token.post(model_path, post_data, headers)
     end
+    
     if response.is_a? Net::HTTPOK
-      if (response.body && response.body.length>0)
-        return JSON.parse(response.body)
-      else
-        return nil
+      return (response.body && response.body.length>0) ? JSON.parse(response.body) : nil
+    end
+
+    # handle error
+    if (response.body && response.body.length>0)
+      error_hash = {}
+      begin
+        error_hash = JSON.parse(response.body)
+      rescue
+        error_hash["response_error"] = "Bad response: #{response.body}"
       end
     else
-      if (response.body && response.body.length>0)
-        error_hash = {}
-        begin
-          error_hash = JSON.parse(response.body)
-        rescue
-          error_hash["error"] = "Bad response: #{response.body}"
-        end
-      else
-        error_hash = {"error", "Bad empty response: #{response}"}
-      end
-      return error_hash
+      error_hash = {"response_error", "Bad empty response: #{response}"}
     end
+    return error_hash
   end
       
-  def get(model_or_action, model_id=nil)
-    request(:get, model_or_action, :model_id => model_id)
+  def get(model_or_action, opts = {})
+    request(:get, model_or_action, opts)
   end
 
-  def post(model_or_action, instance_json)
-    request(:post, model_or_action, :json => instance_json)
+  def post(model, opts = {})
+    request(:create, model, opts)
   end
 
-  def delete(model, model_id)
-    request(:delete, model, :model_id => model_id)
+  def delete(model, opts = {})
+    request(:delete, model, opts)
   end
 end
