@@ -19,6 +19,14 @@ I need to add more command line options to allow you to specify the app at runti
 Eventually I'd like to make this work more like manipulating your ActiveRecord objects from
 the rails console, but it still beats doing everything through a browser or iOS app.
 
+Note, for json files used to specify parameters, they can contain embedded ruby if
+they end in .erb:
+
+    {
+      "login": "script_user_<%= Time.now.to_i-1305800000 %>",
+      "password": "password"
+    }
+
 ## Example
 
 Dump app api

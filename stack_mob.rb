@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'optparse'
 require 'rubygems'
+require 'erb'
  
 require 'stack_mob_config'
 require "stack_mob_oauth"
@@ -67,7 +68,12 @@ optparse = OptionParser.new do|opts|
   opts.on( '-j', '--json file', 'JSON file' ) do |file|
     begin
       File.open(file, 'r') do |f|
-        options[:json] = f.readlines.join
+        contents = f.readlines.join
+        if file =~ /\.erb$/
+          template = ERB.new(contents)
+          contents = template.result
+        end
+        options[:json] = contents
       end
     rescue Exception => ex
       p ex
