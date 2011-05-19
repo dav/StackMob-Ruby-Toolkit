@@ -104,19 +104,28 @@ class StackMobUtilityScript
   
 
   def dump_results(result)
-    max_length = result.keys.max_by{ |k| k.length }.length
-    result.each do |k,v|
-      output_row = sprintf("%#{max_length+1}s %s", k, v)
-      
-      if @ansi_colors
-        if k =~ /error/
-          output_row = Color.red( output_row )
-        elsif k =~ /_id$/
-          output_row = Color.yellow( output_row )
+    return if result.nil?
+    
+    result = [result] if result.is_a?(Hash)
+    
+    result.each do |hash|
+      puts '--'
+      max_length = hash.keys.max_by{ |k| k.length }.length
+      hash.each do |k,v|
+        output_row = sprintf("%#{max_length+1}s %s", k, v.inspect)
+
+        if @ansi_colors
+          if k =~ /error/ || k =~ /^debug$/
+            output_row = Color.red( output_row )
+          elsif k =~ /_id$/
+            output_row = Color.yellow( output_row )
+          end
         end
+        puts output_row
       end
-      puts output_row
+      
     end
+    puts "----\nTotal: #{result.length}" 
   end
   
   def run
