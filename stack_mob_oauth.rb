@@ -21,7 +21,12 @@ class StackMobOauth
     model_id = opts[:model_id]
     path = "/api/0/#{@appname}/#{model}"
     
-    if method == :get || method == :delete
+    if opts[:password] 
+      # must be a login attempt
+      path += '/login' 
+      id_param = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
+      path = path + "?#{id_param}=#{model_id}&password=#{opts[:password]}"
+    elsif method == :get || method == :delete
       if model_id && model_id != :all
         id_param = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
         path = path + "?#{id_param}=#{model_id}"

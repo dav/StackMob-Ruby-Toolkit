@@ -77,6 +77,12 @@ class StackMobUtilityScript
         @options[:delete] = true
       end
 
+      @options[:login] = nil
+      opts.on( '--login username/password', 'Login action, specify username slash password' ) do |credentials|
+        @options[:login] = credentials
+      end
+
+
       @options[:method] = nil
       opts.on( '-M', '--method method', 'Custom method action, combine with --json if necessary' ) do |method|
         @options[:method] = method
@@ -151,12 +157,16 @@ class StackMobUtilityScript
       result = sm.get(method, :json => @options[:json])
       dump_results(result)
     else
-      unless @options[:read] || @options[:delete] || @options[:create]
-        puts "Need to specify an action option (read, delete or create)"
+      unless @options[:read] || @options[:delete] || @options[:create] || @options[:login]
+        puts "Need to specify an action option (read, delete, create or login)"
         exit
       end
 
-      if @options[:read]
+      if @options[:login]
+        (login, password) = @options[:login].split(/\//)
+        result = sm.get(@options[:model], :model_id => login, :id_name => @options[:id_name], :password => password)
+        dump_results(result)
+      elsif @options[:read]
         result = sm.get(@options[:model], :model_id => @options[:id])
         dump_results(result)
       elsif @options[:create]
