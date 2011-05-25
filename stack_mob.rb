@@ -89,19 +89,23 @@ class StackMobUtilityScript
       end
 
       @options[:json] = nil
-      opts.on( '-j', '--json file', 'JSON file containing the request params or model properties' ) do |file|
-        begin
-          File.open(file, 'r') do |f|
-            contents = f.readlines.join
-            if file =~ /\.erb$/
-              template = ERB.new(contents)
-              contents = template.result
+      opts.on( '-j', '--json file-or-string', 'JSON file or string containing the request params or model properties' ) do |file_or_string|
+        if File.exists?(file_or_string)
+          begin
+            File.open(file_or_string, 'r') do |f|
+              contents = f.readlines.join
+              if file_or_string =~ /\.erb$/
+                template = ERB.new(contents)
+                contents = template.result
+              end
+              @options[:json] = contents
             end
-            @options[:json] = contents
+          rescue Exception => ex
+            p ex
+            exit
           end
-        rescue Exception => ex
-          p ex
-          exit
+        else
+          @options[:json] = file_or_string
         end
       end
 
