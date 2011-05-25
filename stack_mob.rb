@@ -57,6 +57,11 @@ class StackMobUtilityScript
         @options[:id] = model_id
       end
 
+      @options[:id_name] = nil
+      opts.on( '--id-name id_name', 'The name of the id field for this model (defaults to <model>_id)' ) do |id_name|
+        @options[:id_name] = id_name
+      end
+
       @options[:read] = false
       opts.on( '-r', '--read', 'Read action' ) do
         @options[:read] = true
@@ -159,7 +164,7 @@ class StackMobUtilityScript
         dump_results(result)
       elsif @options[:delete]
         if @options[:id] != :all
-          result = sm.delete(@options[:model], :model_id => @options[:id])
+          result = sm.delete(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name])
           dump_results(result)
         else
           instances = sm.get(@options[:model], :model_id => :all)
@@ -167,10 +172,11 @@ class StackMobUtilityScript
           user_response = STDIN.gets.strip
           user_response = '[nothing]' if user_response == ''
           if user_response == 'yes'
+            id_param = @options[:id_name].nil? ? "#{@options[:model]}_id" : @options[:id_name]
             instances.each do |instance|
-              model_id = instance["#{@options[:model]}_id"]
+              model_id = instance[id_param]
               puts "Deleting #{model_id}"
-              result = sm.delete(@options[:model], :model_id => model_id)
+              result = sm.delete(@options[:model], :model_id => model_id, :id_name => @options[:id_name])
               dump_results(result)
             end
           else

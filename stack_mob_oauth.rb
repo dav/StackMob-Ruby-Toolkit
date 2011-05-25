@@ -19,11 +19,12 @@ class StackMobOauth
   
   def model_path(method, model, opts)
     model_id = opts[:model_id]
-    path = "/api/1/#{@appname}/#{model}"
+    path = "/api/0/#{@appname}/#{model}"
     
     if method == :get || method == :delete
       if model_id && model_id != :all
-        path = path + "?#{model}_id=#{model_id}"
+        id_param = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
+        path = path + "?#{id_param}=#{model_id}"
       elsif opts[:json]
         params = JSON.parse(opts[:json])
         url_params = URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
