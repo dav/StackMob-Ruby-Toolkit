@@ -4,8 +4,8 @@ require 'erb'
 require 'rubygems'
 
 $LOAD_PATH << File.dirname(__FILE__)
-require 'stack_mob_config'
-require 'stack_mob_oauth'
+require 'stack_mob/config'
+require 'stack_mob/oauth'
 
 #require 'ruby-debug'
 require "pp"
@@ -17,6 +17,15 @@ begin
     extend Term::ANSIColor
   end
 rescue Exception => e
+end
+
+class Hash
+  def any_key?(array)
+    array.each do |k|
+      return true if self.has_key?(k)
+    end
+    return false
+  end
 end
 
 class StackMobUtilityScript
@@ -145,14 +154,14 @@ class StackMobUtilityScript
   end
   
   def run
-    unless @options[:model] || @options[:listapi] || @options[:method]
+    unless @options.any_key? [:model,:listapi,:method]
       puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
       exit
     end
 
-    config = StackMobConfig.new( File.join(File.dirname(__FILE__),'config.json') )
+    config = StackMob::Config.new( File.join(File.dirname(__FILE__),'config.json') )
 
-    sm = StackMobOauth.new(config, @options[:verbose])
+    sm = StackMob::Oauth.new(config, @options[:verbose])
 
     if @options[:listapi]
       result = sm.get 'listapi'
@@ -161,7 +170,7 @@ class StackMobUtilityScript
       result = sm.get(method, :json => @options[:json])
       dump_results(result)
     else
-      unless @options[:read] || @options[:delete] || @options[:create] || @options[:login]
+      unless @options.any_key? [:read,:delete,:create,:login]
         puts "Need to specify an action option (read, delete, create or login)"
         exit
       end
