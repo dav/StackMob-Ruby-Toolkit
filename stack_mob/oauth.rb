@@ -2,7 +2,7 @@ require 'rubygems'
 require 'oauth'
 require "json"
 
-require 'stack_mob_config'
+require 'stack_mob/config'
 
 module StackMob
   class Oauth
@@ -22,7 +22,14 @@ module StackMob
       model_id = opts[:model_id]
       path = "/api/0/#{@appname}/#{model}"
 
-      if method == :get || method == :delete
+      if opts[:password] 
+        # must be a login attempt (TODO ewwww)
+        path += '/login' 
+        id_param = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
+        path = path + "?#{id_param}=#{model_id}&password=#{opts[:password]}"
+      elsif opts[:logout]
+        path += '/logout'
+      elsif method == :get || method == :delete
         if model_id && model_id != :all
           id_param = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
           path = path + "?#{id_param}=#{model_id}"
@@ -39,8 +46,15 @@ module StackMob
       model_path = model_path(method, model, opts)
 
       headers = {}
-      headers['Content-type' => 'application/json'] if opts[:json]
-
+      headers['Content-type'] = 'application/json' if opts[:json]
+      
+      cookie_file = "current_stackmob_login_cookie.txt"
+      
+      if File.exists?(cookie_file)
+        File.open(cookie_file, 'r') do |f|
+          headers['Cookie'] = f.gets
+        end
+      end
       response = case method
       when :get
         @access_token.get(model_path, headers)
@@ -49,6 +63,13 @@ module StackMob
       when :create
         post_data = opts[:json]
         @access_token.post(model_path, post_data, headers)
+      end
+
+      cookie = response["Cookie"]
+      unless cookie.nil?
+        File.open(cookie_file,'w') do |f|
+          f.write cookie
+        end
       end
 
       if response.is_a? Net::HTTPOK
