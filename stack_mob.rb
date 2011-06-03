@@ -220,6 +220,8 @@ class StackMobUtilityScript
 end
 
 if __FILE__ == $0
+  ARGV << '-h' if ARGV.length == 0
+    
   script = StackMobUtilityScript.new
   script.run
 end
