@@ -188,7 +188,7 @@ class StackMobUtilityScript
         result = sm.get(@options[:model], :logout => true)
         dump_results(result)
       elsif @options[:read]
-        result = sm.get(@options[:model], :model_id => @options[:id])
+        result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name])
         dump_results(result)
       elsif @options[:create]
         result = sm.post(@options[:model], :json => @options[:json])
