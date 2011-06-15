@@ -61,9 +61,9 @@ Dump app api:
            "description"=>"UTC time when the entity was created"},
            ....
 
-Dump all user instances in the database:
+Dump all user instances in the database sorted by lastmoddate:
 
-		$ ruby stack_mob.rb --model user --read --all
+		$ ruby stack_mob.rb --model user --read --all --sort-by lastmoddate
 		[{"createddate"=>1305304396910,
 		  "user_id"=>"4dcd5d4caf985c0c24050345",
 		  "lastmoddate"=>1305304396910,

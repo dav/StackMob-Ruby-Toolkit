@@ -122,6 +122,17 @@ class StackMobUtilityScript
         end
       end
 
+      @options[:date_string] = false
+      opts.on( '-ds', '--date-string', 'Convert dates numbers to strings in output' ) do
+        @options[:date_string] = true
+      end
+
+      @options[:sort_by] = nil
+      opts.on( '-s', '--sort-by field', 'Sort output by field' ) do |field|
+        @options[:sort_by] = field
+      end
+
+      
       opts.on( '-h', '--help', 'Display this screen' ) do
         puts opts
         exit
@@ -137,11 +148,29 @@ class StackMobUtilityScript
     
     result = [result] if result.is_a?(Hash)
     
+    if @options[:sort_by]
+      field = @options[:sort_by]
+      if result.any? { |h| h[field].nil? }
+        puts "Error: at least some of sort field #{field} are nil, so unable to sort."
+        exit
+      else
+        result.sort! { |a,b| a[field] <=> b[field] }
+      end
+    end
+    
     result.each do |hash|
       puts '--'
       max_length = hash.keys.max_by{ |k| k.length }.length
       hash.each do |k,v|
         v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
+        
+        if k =~ /date$/ && @options[:date_string]
+          time = Time.at v.to_i/1000.0
+          unless time.nil?
+            v = time.strftime "%z %Y-%m-%d %H:%M:%S"
+          end
+        end
+        
         output_row = sprintf("%#{max_length+1}s %s", k, v)
 
         if @ansi_colors
@@ -199,19 +228,23 @@ class StackMobUtilityScript
           dump_results(result)
         else
           instances = sm.get(@options[:model], :model_id => :all)
-          puts "Are you sure you want to delete all #{instances.size} instances of #{@options[:model]}? (yes|NO)"
-          user_response = STDIN.gets.strip
-          user_response = '[nothing]' if user_response == ''
-          if user_response == 'yes'
-            id_param = @options[:id_name].nil? ? "#{@options[:model]}_id" : @options[:id_name]
-            instances.each do |instance|
-              model_id = instance[id_param]
-              puts "Deleting #{model_id}"
-              result = sm.delete(@options[:model], :model_id => model_id, :id_name => @options[:id_name])
-              dump_results(result)
+          if (instances.length > 0)
+            puts "Are you sure you want to delete all #{instances.size} instances of #{@options[:model]}? (yes|NO)"
+            user_response = STDIN.gets.strip
+            user_response = '[nothing]' if user_response == ''
+            if user_response == 'yes'
+              id_param = @options[:id_name].nil? ? "#{@options[:model]}_id" : @options[:id_name]
+              instances.each do |instance|
+                model_id = instance[id_param]
+                puts "Deleting #{model_id}"
+                result = sm.delete(@options[:model], :model_id => model_id, :id_name => @options[:id_name])
+                dump_results(result)
+              end
+            else
+              puts "Ok, #{user_response}!=yes, so not deleting everything. Whew."
             end
           else
-            puts "Ok, #{user_response}!=yes, so not deleting everything. Whew."
+            puts "No instances of #{@options[:model]} to delete."
           end
         end
       end
