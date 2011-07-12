@@ -44,6 +44,11 @@ class StackMobUtilityScript
         @options[:verbose] = true
       end
 
+      @options[:config] = nil
+      opts.on( '--config configfile', 'The StackMob app config' ) do |configfile|
+        @options[:config] = configfile
+      end
+
       opts.on( '-C', '--no-colors', 'Don\'t output with ASNI colors' ) do
         @ansi_colors = false 
       end
@@ -118,12 +123,15 @@ class StackMobUtilityScript
             exit
           end
         else
+          if file_or_string =~ /\.json(\.erb)?$/
+            puts "WARNING: no json file '#{file_or_string}'"
+          end
           @options[:json] = file_or_string
         end
       end
 
       @options[:date_string] = false
-      opts.on( '-ds', '--date-string', 'Convert dates numbers to strings in output' ) do
+      opts.on( '--date-string', 'Convert dates numbers to strings in output' ) do
         @options[:date_string] = true
       end
 
@@ -193,7 +201,18 @@ class StackMobUtilityScript
       exit
     end
 
-    config = StackMob::Config.new( File.join(File.dirname(__FILE__),'config.json') )
+    if @options[:config].nil?
+      ['config.json', File.join(File.dirname(__FILE__),'config.json')].each do |filename|
+        if File.exists?(filename)
+          @options[:config] = filename 
+          break
+        end
+      end
+      
+    end
+    
+    puts "Using config: #{@options[:config]}" if @options[:verbose]
+    config = StackMob::Config.new( File.join(@options[:config]) )
 
     sm = StackMob::Oauth.new(config, @options[:verbose])
 
