@@ -22,7 +22,7 @@ end
 class Hash
   def any_key?(array)
     array.each do |k|
-      return true if self.has_key?(k)
+      return true if self.has_key?(k) && self[k]!=nil && self[k]!=false
     end
     return false
   end
