@@ -123,7 +123,7 @@ class StackMobUtilityScript
       end
 
       @options[:date_string] = false
-      opts.on( '-ds', '--date-string', 'Convert dates numbers to strings in output' ) do
+      opts.on( '--date-string', 'Convert dates numbers to strings in output' ) do
         @options[:date_string] = true
       end
 
