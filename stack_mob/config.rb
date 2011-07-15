@@ -14,7 +14,8 @@ module StackMob
 
       @appname = config["default"]
       raise "Config is missing default app name" if @appname.nil?
-
+      raise "Missing #{@appname} section." if config[@appname].nil?
+      
       @key = config[@appname]["key"]
       @secret = config[@appname]["secret"]
       if @key.nil? || @secret.nil?
