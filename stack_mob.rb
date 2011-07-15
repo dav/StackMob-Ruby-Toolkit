@@ -22,7 +22,7 @@ end
 class Hash
   def any_key?(array)
     array.each do |k|
-      return true if self.has_key?(k) && self[k]!=nil && self[k]!=false
+      return true if self.has_key?(k)
     end
     return false
   end
@@ -44,16 +44,6 @@ class StackMobUtilityScript
         @options[:verbose] = true
       end
 
-      @options[:debug] = false
-      opts.on( '--debug', 'Output even more information' ) do
-        @options[:debug] = true
-      end
-
-      @options[:config] = nil
-      opts.on( '--config configfile', 'The StackMob app config' ) do |configfile|
-        @options[:config] = configfile
-      end
-
       opts.on( '-C', '--no-colors', 'Don\'t output with ASNI colors' ) do
         @ansi_colors = false 
       end
@@ -61,11 +51,6 @@ class StackMobUtilityScript
       @options[:listapi] = false
       opts.on( '-l', '--listapi', 'The StackMob api for this app' ) do
         @options[:listapi] = true
-      end
-
-      @options[:push] = false
-      opts.on( '--push', 'Indicates a push request' ) do
-        @options[:push] = true
       end
 
       @options[:model] = nil
@@ -133,15 +118,12 @@ class StackMobUtilityScript
             exit
           end
         else
-          if file_or_string =~ /\.json(\.erb)?$/
-            puts "WARNING: no json file '#{file_or_string}'"
-          end
           @options[:json] = file_or_string
         end
       end
 
       @options[:date_string] = false
-      opts.on( '--date-string', 'Convert dates numbers to strings in output' ) do
+      opts.on( '-ds', '--date-string', 'Convert dates numbers to strings in output' ) do
         @options[:date_string] = true
       end
 
@@ -158,11 +140,6 @@ class StackMobUtilityScript
     end
     
     optparse.parse!
-    
-    if @options[:debug]
-      puts "Options:"
-      pp @options
-    end
   end
   
 
@@ -183,54 +160,40 @@ class StackMobUtilityScript
     
     result.each do |hash|
       puts '--'
-      if hash.keys.length>0
-        max_length = hash.keys.max_by{ |k| k.length }.length
-        hash.each do |k,v|
-          v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
+      max_length = hash.keys.max_by{ |k| k.length }.length
+      hash.each do |k,v|
+        v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
         
-          if k =~ /date$/ && @options[:date_string]
-            time = Time.at v.to_i/1000.0
-            unless time.nil?
-              v = time.strftime "%z %Y-%m-%d %H:%M:%S"
-            end
+        if k =~ /date$/ && @options[:date_string]
+          time = Time.at v.to_i/1000.0
+          unless time.nil?
+            v = time.strftime "%z %Y-%m-%d %H:%M:%S"
           end
-        
-          output_row = sprintf("%#{max_length+1}s %s", k, v)
-
-          if @ansi_colors
-            if k =~ /error/ || k =~ /^debug$/
-              output_row = Color.red( output_row )
-            elsif k =~ /_id$/
-              output_row = Color.yellow( output_row )
-            end
-          end
-          puts output_row
         end
-      else
-        puts 'empty response hash'
+        
+        output_row = sprintf("%#{max_length+1}s %s", k, v)
+
+        if @ansi_colors
+          if k =~ /error/ || k =~ /^debug$/
+            output_row = Color.red( output_row )
+          elsif k =~ /_id$/
+            output_row = Color.yellow( output_row )
+          end
+        end
+        puts output_row
       end
+      
     end
     puts "----\nTotal: #{result.length}" 
   end
   
   def run
-    unless @options.any_key? [:model,:listapi,:method,:push]
+    unless @options.any_key? [:model,:listapi,:method]
       puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
       exit
     end
 
-    if @options[:config].nil?
-      ['config.json', File.join(File.dirname(__FILE__),'config.json')].each do |filename|
-        if File.exists?(filename)
-          @options[:config] = filename 
-          break
-        end
-      end
-      
-    end
-    
-    puts "Using config: #{@options[:config]}" if @options[:verbose]
-    config = StackMob::Config.new( File.join(@options[:config]) )
+    config = StackMob::Config.new( File.join(File.dirname(__FILE__),'config.json') )
 
     sm = StackMob::Oauth.new(config, @options[:verbose])
 
@@ -246,10 +209,7 @@ class StackMobUtilityScript
         exit
       end
 
-      if @options[:push]
-        result = sm.post(:push, :json => @options[:json])
-        dump_results(result)
-      elsif @options[:login]
+      if @options[:login]
         (username, password) = @options[:login].split(/\//)
         result = sm.get(@options[:model], :model_id => username, :id_name => @options[:id_name], :password => password)
         dump_results(result)
@@ -293,8 +253,6 @@ class StackMobUtilityScript
 end
 
 if __FILE__ == $0
-  ARGV << '-h' if ARGV.length == 0
-    
   script = StackMobUtilityScript.new
   script.run
 end
