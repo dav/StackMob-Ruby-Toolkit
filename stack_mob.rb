@@ -44,6 +44,11 @@ class StackMobUtilityScript
         @options[:verbose] = true
       end
 
+      @options[:debug] = false
+      opts.on( '--debug', 'Output even more information' ) do
+        @options[:debug] = true
+      end
+
       opts.on( '-C', '--no-colors', 'Don\'t output with ASNI colors' ) do
         @ansi_colors = false 
       end
@@ -51,6 +56,11 @@ class StackMobUtilityScript
       @options[:listapi] = false
       opts.on( '-l', '--listapi', 'The StackMob api for this app' ) do
         @options[:listapi] = true
+      end
+
+      @options[:push] = false
+      opts.on( '--push', 'Indicates a push request' ) do
+        @options[:push] = true
       end
 
       @options[:model] = nil
@@ -140,6 +150,11 @@ class StackMobUtilityScript
     end
     
     optparse.parse!
+    
+    if @options[:debug]
+      puts "Options:"
+      pp @options
+    end
   end
   
 
@@ -160,35 +175,38 @@ class StackMobUtilityScript
     
     result.each do |hash|
       puts '--'
-      max_length = hash.keys.max_by{ |k| k.length }.length
-      hash.each do |k,v|
-        v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
+      if hash.keys.length>0
+        max_length = hash.keys.max_by{ |k| k.length }.length
+        hash.each do |k,v|
+          v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
         
-        if k =~ /date$/ && @options[:date_string]
-          time = Time.at v.to_i/1000.0
-          unless time.nil?
-            v = time.strftime "%z %Y-%m-%d %H:%M:%S"
+          if k =~ /date$/ && @options[:date_string]
+            time = Time.at v.to_i/1000.0
+            unless time.nil?
+              v = time.strftime "%z %Y-%m-%d %H:%M:%S"
+            end
           end
-        end
         
-        output_row = sprintf("%#{max_length+1}s %s", k, v)
+          output_row = sprintf("%#{max_length+1}s %s", k, v)
 
-        if @ansi_colors
-          if k =~ /error/ || k =~ /^debug$/
-            output_row = Color.red( output_row )
-          elsif k =~ /_id$/
-            output_row = Color.yellow( output_row )
+          if @ansi_colors
+            if k =~ /error/ || k =~ /^debug$/
+              output_row = Color.red( output_row )
+            elsif k =~ /_id$/
+              output_row = Color.yellow( output_row )
+            end
           end
+          puts output_row
         end
-        puts output_row
+      else
+        puts 'empty response hash'
       end
-      
     end
     puts "----\nTotal: #{result.length}" 
   end
   
   def run
-    unless @options.any_key? [:model,:listapi,:method]
+    unless @options.any_key? [:model,:listapi,:method,:push]
       puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
       exit
     end
@@ -209,7 +227,10 @@ class StackMobUtilityScript
         exit
       end
 
-      if @options[:login]
+      if @options[:push]
+        result = sm.post(:push, :json => @options[:json])
+        dump_results(result)
+      elsif @options[:login]
         (username, password) = @options[:login].split(/\//)
         result = sm.get(@options[:model], :model_id => username, :id_name => @options[:id_name], :password => password)
         dump_results(result)

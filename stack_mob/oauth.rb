@@ -42,8 +42,13 @@ module StackMob
       path
     end
 
+    def push_path
+      "/push/0/#{@appname}/device_tokens"
+    end
+
     def request(method, model, opts={})
-      model_path = model_path(method, model, opts)
+      # TODO conceptually clean up this nuttiness before origin push
+      path = model == :push ? push_path : model_path(method, model, opts)
 
       headers = {}
       headers['Content-type'] = 'application/json' if opts[:json]
@@ -57,12 +62,12 @@ module StackMob
       end
       response = case method
       when :get
-        @access_token.get(model_path, headers)
+        @access_token.get(path, headers)
       when :delete
-        @access_token.delete(model_path, headers)
+        @access_token.delete(path, headers)
       when :create
         post_data = opts[:json]
-        @access_token.post(model_path, post_data, headers)
+        @access_token.post(path, post_data, headers)
       end
 
       cookie = response["Cookie"]
