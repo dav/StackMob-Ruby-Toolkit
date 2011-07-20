@@ -2,6 +2,7 @@
   "default": "YOUR APP NAME",
   "YOUR APP NAME AGAIN": {
   	"key": "YOUR STACKMOB APP PUBLIC KEY",
-  	"secret": "YOUR STACKMOB APP SECRET KEY"
+  	"secret": "YOUR STACKMOB APP SECRET KEY",
+  	"version": 0
   }
 }
