@@ -8,6 +8,7 @@ module StackMob
   class Oauth
     def initialize(config, debug = false)
       @appname = config.appname
+      @version = config.version
 
       @consumer = OAuth::Consumer.new(config.key, config.secret, {
           :site=>"http://meexo.stackmob.com"
@@ -20,7 +21,7 @@ module StackMob
 
     def model_path(method, model, opts)
       model_id = opts[:model_id]
-      path = "/api/0/#{@appname}/#{model}"
+      path = "/api/#{@version}/#{@appname}/#{model}"
 
       if opts[:password] 
         # must be a login attempt (TODO ewwww)

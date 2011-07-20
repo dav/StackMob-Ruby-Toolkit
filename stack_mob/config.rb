@@ -2,7 +2,7 @@ require 'json'
 
 module StackMob
   class Config < Hash
-    attr_reader :appname, :key, :secret
+    attr_reader :appname, :key, :secret, :version
 
     def initialize(configfile="config.json")
       super
@@ -17,9 +17,15 @@ module StackMob
       raise "Missing #{@appname} section." if config[@appname].nil?
       
       @key = config[@appname]["key"]
+      
       @secret = config[@appname]["secret"]
       if @key.nil? || @secret.nil?
        raise "Config is missing key and/or secret."
+      end
+      
+      @version = config[@appname]["version"]
+      if @version.nil?
+       @version = 0
       end
 
       self.merge! config
