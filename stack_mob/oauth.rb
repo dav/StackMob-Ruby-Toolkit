@@ -79,7 +79,16 @@ module StackMob
       end
 
       if response.is_a? Net::HTTPOK
-        return (response.body && response.body.length>0) ? JSON.parse(response.body) : nil
+        if response.body && response.body.length>0
+          # StackMob apparently sometimes does not return JSON
+          if response.body =~ /^Success/
+            return {"response" => response.body}
+          else
+            return JSON.parse(response.body)
+          end
+        else
+          return nil
+        end
       end
 
       # handle error
