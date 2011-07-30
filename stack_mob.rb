@@ -101,6 +101,11 @@ class StackMobUtilityScript
         @options[:delete] = true
       end
 
+      @options[:yes_delete] = false
+      opts.on( '--yes', 'Yes, delete all!' ) do
+        @options[:yes_delete] = true
+      end
+
       @options[:login] = nil
       opts.on( '--login username/password', 'Log in action, specify username slash password' ) do |credentials|
         @options[:login] = credentials
@@ -269,10 +274,14 @@ class StackMobUtilityScript
         else
           instances = sm.get(@options[:model], :model_id => :all)
           if (instances.length > 0)
-            puts "Are you sure you want to delete all #{instances.size} instances of #{@options[:model]}? (yes|NO)"
-            user_response = STDIN.gets.strip
-            user_response = '[nothing]' if user_response == ''
-            if user_response == 'yes'
+            unless @options[:yes_delete]
+              puts "Are you sure you want to delete all #{instances.size} instances of #{@options[:model]}? (yes|NO)"
+              user_response = STDIN.gets.strip
+              user_response = '[nothing]' if user_response == ''
+              @options[:yes_delete] = true if user_response == 'yes'
+            end
+
+            if @options[:yes_delete]
               id_param = @options[:id_name].nil? ? "#{@options[:model]}_id" : @options[:id_name]
               instances.each do |instance|
                 model_id = instance[id_param]
@@ -281,7 +290,7 @@ class StackMobUtilityScript
                 dump_results(result)
               end
             else
-              puts "Ok, #{user_response}!=yes, so not deleting everything. Whew."
+              puts "Ok, not deleting every #{@options[:model]}. Whew, that was close."
             end
           else
             puts "No instances of #{@options[:model]} to delete."
