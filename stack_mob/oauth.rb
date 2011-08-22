@@ -11,7 +11,7 @@ module StackMob
       @version = config.version
 
       @consumer = OAuth::Consumer.new(config.key, config.secret, {
-          :site=>"http://meexo.stackmob.com"
+          :site => "http://#{config.appname}.stackmob.com"
           })
 
       @consumer.http.set_debug_output($stderr) if debug
