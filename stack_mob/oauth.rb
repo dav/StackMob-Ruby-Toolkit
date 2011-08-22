@@ -71,7 +71,7 @@ module StackMob
         @access_token.post(path, post_data, headers)
       end
 
-      cookie = response["Cookie"]
+      cookie = response["Set-Cookie"]
       unless cookie.nil?
         File.open(cookie_file,'w') do |f|
           f.write cookie
