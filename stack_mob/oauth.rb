@@ -48,7 +48,7 @@ module StackMob
     end
 
     def request(method, model, opts={})
-      # TODO conceptually clean up this nuttiness before origin push
+      # TODO conceptually clean up this nuttiness before origin push. Ha! Too late!
       path = model == :push ? push_path : model_path(method, model, opts)
 
       headers = {}
