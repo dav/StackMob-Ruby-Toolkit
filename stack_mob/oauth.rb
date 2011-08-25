@@ -6,12 +6,12 @@ require 'stack_mob/config'
 
 module StackMob
   class Oauth
-    def initialize(config, debug = false)
-      @appname = config.appname
-      @version = config.version
+    def initialize(config, deployment, version, debug = false)
+      @appname = config["application"]
+      @version = version
 
-      @consumer = OAuth::Consumer.new(config.key, config.secret, {
-          :site => "http://#{config.appname}.stackmob.com"
+      @consumer = OAuth::Consumer.new(nil, nil, {
+          :site => "http://#{config["account"]}.stackmob.com"
           })
 
       @consumer.http.set_debug_output($stderr) if debug

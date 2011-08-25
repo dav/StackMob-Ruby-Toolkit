@@ -54,6 +54,16 @@ class StackMobUtilityScript
         @options[:config] = configfile
       end
 
+      @options[:deployment] = "sandbox"
+      opts.on( '--production', 'Use the production keys' ) do
+        @options[:deployment] = "production"
+      end
+
+      @options[:version] = 0
+      opts.on( '--version api_version', 'Use the specified production api version' ) do |version|
+        @options[:version] = version
+      end
+
       opts.on( '-C', '--no-colors', 'Don\'t output with ASNI colors' ) do
         @ansi_colors = false 
       end
@@ -237,7 +247,7 @@ class StackMobUtilityScript
     puts "Using config: #{@options[:config]}" if @options[:verbose]
     config = StackMob::Config.new( File.join(@options[:config]) )
 
-    sm = StackMob::Oauth.new(config, @options[:verbose])
+    sm = StackMob::Oauth.new(config, @options[:deployment], @options[:version], @options[:verbose])
 
     if @options[:listapi]
       result = sm.get 'listapi'
