@@ -10,7 +10,7 @@ module StackMob
       @appname = config["application"]
       @version = version
 
-      @consumer = OAuth::Consumer.new(nil, nil, {
+      @consumer = OAuth::Consumer.new(config[deployment]["key"], config[deployment]["secret"], {
           :site => "http://#{config["account"]}.stackmob.com"
           })
 
