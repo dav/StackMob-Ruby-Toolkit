@@ -9,12 +9,14 @@ _Warning: this is something I whipped up for my own use. Use at your own risk._
 Currently, this is a set of ruby scripts that allows you to create, read and delete your 
 StackMob data from the command line.
 
-To use it, first copy config.json.example to config.json and set your app and key information.
+To use it, first copy config.json.example to config.json and set your StackMob information.
 
-For now, run the script from the source directory (and keep config.json there too)
+You should have a different config file for each StackMob application. By default the
+script looks for ./config.json but you can specify a specific one using the --config option.
 
-For now, it only works for one app, the one specified as default in the config file.
-I need to add more command line options to allow you to specify the app at runtime.
+By default the script uses your sandbox credentials and api version 0. You can use 
+the --production option to switch to production keys and api version 1. The --version
+option lets you specify different production versions.
 
 Eventually I'd like to make this work more like manipulating your ActiveRecord objects from
 the rails console, but it still beats doing everything through a browser or iOS app.
@@ -27,6 +29,10 @@ they end in .erb:
       "login": "script_user_<%= Time.now.to_i-1305800000 %>",
       "password": "password"
     }
+
+The --json options also takes inline json:
+
+    $ ruby stack_mob.rb -m user -c --json '{"login":"alice","password","s3cr3t"}'
 
 ## Requires
 
