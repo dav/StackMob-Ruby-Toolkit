@@ -247,6 +247,8 @@ class StackMobUtilityScript
     puts "Using config: #{@options[:config]}" if @options[:verbose]
     config = StackMob::Config.new( File.join(@options[:config]) )
 
+    @options[:version] = 1 if @options[:deployment] == 'production' && @options[:version] == 0
+    
     sm = StackMob::Oauth.new(config, @options[:deployment], @options[:version], @options[:verbose])
 
     if @options[:listapi]
