@@ -3,10 +3,10 @@
   "application": "YOUR APPLICATION NAME",
   "sandbox": {
     "key": "YOUR STACKMOB APP SANDBOX PUBLIC KEY",
-    "secret": "YOUR STACKMOB APP SANDBOX SECRET KEY",
+    "secret": "YOUR STACKMOB APP SANDBOX SECRET KEY"
   },
   "production": {
     "key": "YOUR STACKMOB APP PRODUCTION PUBLIC KEY",
-    "secret": "YOUR STACKMOB APP PRODUCTION SECRET KEY",
+    "secret": "YOUR STACKMOB APP PRODUCTION SECRET KEY"
   }
 }
