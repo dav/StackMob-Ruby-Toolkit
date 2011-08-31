@@ -100,7 +100,7 @@ module StackMob
           error_hash["response_error"] = "Bad response: #{response.body}"
         end
       else
-        error_hash = {"response_error", "Bad empty response: #{response}"}
+        error_hash = {"response_error" => "Bad empty response: #{response}"}
       end
       return error_hash
     end
