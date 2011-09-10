@@ -41,7 +41,7 @@ module StackMob
         elsif opts[:json]
           params = JSON.parse(opts[:json])
           url_params = params.collect{|k,v| 
-            value = CGI.escape(v)
+            value = CGI.escape("#{v}")
             "#{k}=#{value}"
           }.join('&')
           path = path + "?" + url_params
