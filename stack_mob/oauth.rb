@@ -19,8 +19,10 @@ module StackMob
           })
 
       @consumer.http.set_debug_output($stderr) if debug
+      #@consumer.http.read_timeout = 90
 
       @access_token = OAuth::AccessToken.new @consumer
+      #puts @consumer.http.instance_variable_get "@read_timeout"
     end
 
     def model_path(method, model, opts)
@@ -76,6 +78,9 @@ module StackMob
       when :create
         post_data = opts[:json]
         @access_token.post(path, post_data, headers)
+      when :put
+        post_data = opts[:json]
+        @access_token.put(path, post_data, headers)
       end
 
       cookie = response["Set-Cookie"]
@@ -118,6 +123,10 @@ module StackMob
 
     def post(model, opts = {})
       request(:create, model, opts)
+    end
+
+    def put(model, opts = {})
+      request(:put, model, opts)
     end
 
     def delete(model, opts = {})
