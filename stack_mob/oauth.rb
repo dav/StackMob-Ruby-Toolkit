@@ -10,6 +10,8 @@ module StackMob
       @appname = config["application"]
       @version = version
 
+      puts "using #{deployment} #{config[deployment]["key"]}"  if debug
+        
       @consumer = OAuth::Consumer.new(config[deployment]["key"], config[deployment]["secret"], {
           :site => "http://#{config["account"]}.stackmob.com"
           })
@@ -36,7 +38,10 @@ module StackMob
           path = path + "?#{id_param}=#{model_id}"
         elsif opts[:json]
           params = JSON.parse(opts[:json])
-          url_params = URI.escape(params.collect{|k,v| "#{k}=#{v}"}.join('&'))
+          url_params = (params.collect{|k,v| 
+            value = CGI.escape("#{v}")
+            "#{k}=#{value}"
+            }).join('&')
           path = path + "?" + url_params
         end
       end
