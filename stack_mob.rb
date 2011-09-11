@@ -106,6 +106,11 @@ class StackMobUtilityScript
         @options[:create] = true
       end
 
+      @options[:update] = false
+      opts.on( '-u', '--update', 'Update action, combine with --json' ) do
+        @options[:update] = true
+      end
+
       @options[:delete] = false
       opts.on( '-d', '--delete', 'Delete action' ) do
         @options[:delete] = true
@@ -258,8 +263,8 @@ class StackMobUtilityScript
       result = sm.get(method, :json => @options[:json])
       dump_results(result)
     else
-      unless @options.any_key? [:read,:delete,:create,:login,:logout]
-        puts "Need to specify an action option (read, delete, create, login or logout)"
+      unless @options.any_key? [:read,:delete,:create,:update,:login,:logout]
+        puts "Need to specify an action option (read, delete, create, update, login or logout)"
         exit
       end
 
@@ -278,6 +283,9 @@ class StackMobUtilityScript
         dump_results(result)
       elsif @options[:create]
         result = sm.post(@options[:model], :json => @options[:json])
+        dump_results(result)
+      elsif @options[:update]
+        result = sm.put(@options[:model], :json => @options[:json])
         dump_results(result)
       elsif @options[:delete]
         if @options[:id] != :all
