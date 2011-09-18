@@ -1,0 +1,52 @@
+package com.meexo.model;
+
+import java.util.*;
+
+import com.stackmob.core.DatastoreException;
+import com.stackmob.core.InvalidSchemaException;
+
+public class <%= @model.classname %> extends Model {
+<% @model.model_specific_properties.each do |property| -%>
+  private <%= property.java_type %> <%= property.ivar_name %>;
+<% end %>
+
+  public <%= @model.classname %>() {
+  }
+
+  public <%= @model.classname %>(String modelId) {
+    this.id = modelId;
+  }
+
+
+<% @model.model_specific_properties.each do |property| -%>
+  public <%= property.java_type %> get<%= property.name %>() { return this.<%= property.ivar_name %>; }
+  public void set<%= property.name %>(<%= property.java_type %> <%= property.ivar_name %>) { this.<%= property.ivar_name %> = <%= property.ivar_name %>; }
+  
+<% end %>
+
+  // Model subclass-specific overrides
+  // --------------------------
+
+  public void update() throws DatastoreException, InvalidSchemaException {
+    super.update(<%= @model.properties.map { |property| "\"#{property.name.underscore}\"" }.join(",") %>);
+  }
+
+  public Map<String,Object> toModelMap() {
+    Map<String,Object> map = super.toModelMap();
+
+<% @model.model_specific_properties.each do |property| 
+      property_object = property.java_type == 'long' ? "new Long(this.#{property.ivar_name})" : "this.#{property.ivar_name}" -%>
+    map.put("<%= property.name.underscore %>", <%= property_object %>);
+<% end -%>
+
+    return map;
+  }
+
+  public void setFromModelMap(Map<String,Object> map) {
+    super.setFromModelMap(map);
+<% @model.model_specific_properties.each do |property| -%>
+    this.<%= property.ivar_name %> = <%= property.java_map_getter %>;
+<% end -%>
+  }
+
+}
