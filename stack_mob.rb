@@ -275,6 +275,8 @@ class StackMobUtilityScript
         if File.exists?(filename)
           @options[:config] = filename 
           break
+        else
+          puts "Warning, no config. Tried #{filename}"
         end
       end
       
