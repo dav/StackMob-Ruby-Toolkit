@@ -9,7 +9,8 @@ module StackMob
     def initialize(config, deployment, version, debug = false)
       @appname = config["application"]
       @version = version
-
+      @debug = debug
+      
       if debug
         puts "Using #{deployment} keys."
       end
@@ -70,16 +71,20 @@ module StackMob
           headers['Cookie'] = f.gets
         end
       end
+
+      post_data = opts[:json]
+      if @debug && post_data
+        STDERR.puts "POST DATA:\n#{post_data}"
+      end
+
       response = case method
       when :get
         @access_token.get(path, headers)
       when :delete
         @access_token.delete(path, headers)
       when :create
-        post_data = opts[:json]
         @access_token.post(path, post_data, headers)
       when :put
-        post_data = opts[:json]
         @access_token.put(path, post_data, headers)
       end
 
