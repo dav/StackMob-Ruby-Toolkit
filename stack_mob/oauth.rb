@@ -49,6 +49,10 @@ module StackMob
           }.join('&')
           path = path + "?" + url_params
         end
+        
+        if opts[:expand_depth]
+          path += "&_expand=#{opts[:expand_depth]}"
+        end
       end
       path
     end

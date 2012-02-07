@@ -167,6 +167,11 @@ class StackMobUtilityScript
         @options[:method] = method
       end
 
+      @options[:expand] = nil
+      opts.on( '-X', '--expand count', 'Expand relationships depth' ) do |method|
+        @options[:expand] = method
+      end
+
       @options[:json] = nil
       opts.on( '-j', '--json file-or-string', 'JSON file or string containing the request params or model properties' ) do |file_or_string|
         if File.exists?(file_or_string)
@@ -313,7 +318,7 @@ class StackMobUtilityScript
         result = sm.get(@options[:model], :logout => true)
         dump_results(result)
       elsif @options[:read]
-        result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name])
+        result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name], :expand_depth => @options[:expand])
         dump_results(result)
       elsif @options[:create]
         result = sm.post(@options[:model], :json => @options[:json])
