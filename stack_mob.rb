@@ -153,7 +153,7 @@ class StackMobUtilityScript
       end
 
       @options[:login] = nil
-      opts.on( '--login username/password', 'Log in action, specify username slash password' ) do |credentials|
+      opts.on( '--login username/password', 'Log in action, specify username slash password or else specify a fb_at' ) do |credentials|
         @options[:login] = credentials
       end
 
@@ -270,7 +270,7 @@ class StackMobUtilityScript
   end
   
   def run
-    unless @options.any_key? [:model,:listapi,:method,:push]
+    unless @options.any_key? [:model,:listapi,:method,:push,:login,:logout]
       puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
       exit
     end
@@ -312,7 +312,12 @@ class StackMobUtilityScript
         dump_results(result)
       elsif @options[:login]
         (username, password) = @options[:login].split(/\//)
-        result = sm.get(@options[:model], :model_id => username, :id_name => @options[:id_name], :password => password)
+        if password.nil?
+          # assuming it is a fb_at
+          result = sm.get('user/facebookLogin', :json => %Q({"fb_at":"#{@options[:login]}"}))
+        else
+          result = sm.get(@options[:model], :model_id => username, :id_name => @options[:id_name], :password => password)
+        end
         dump_results(result)
       elsif @options[:logout]
         result = sm.get(@options[:model], :logout => true)
