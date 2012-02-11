@@ -172,6 +172,11 @@ class StackMobUtilityScript
         @options[:expand] = method
       end
 
+      @options[:long_output] = false
+      opts.on( '-L', '--long', 'Long output (pretty print)' ) do
+        @options[:long_output] = true
+      end
+
       @options[:json] = nil
       opts.on( '-j', '--json file-or-string', 'JSON file or string containing the request params or model properties' ) do |file_or_string|
         if File.exists?(file_or_string)
@@ -242,7 +247,11 @@ class StackMobUtilityScript
       if hash.keys.length>0
         max_length = hash.keys.max_by{ |k| k.length }.length
         hash.each do |k,v|
-          v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
+          if @options[:long_output] && v.is_a?(Hash)
+            v = PP.pp(v,"")
+          else
+            v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
+          end
         
           if k =~ /date$/ && @options[:date_string]
             time = Time.at v.to_i/1000.0
