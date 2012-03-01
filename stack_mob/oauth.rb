@@ -20,7 +20,7 @@ module StackMob
           })
 
       @consumer.http.set_debug_output($stderr) if debug
-      #@consumer.http.read_timeout = 90
+      #@consumer.http.read_timeout = 90   note apparently resetting the timeout to >90 here has no effect
 
       @access_token = OAuth::AccessToken.new @consumer
       #puts @consumer.http.instance_variable_get "@read_timeout"
@@ -79,6 +79,10 @@ module StackMob
       post_data = opts[:json]
       if @debug && post_data
         STDERR.puts "POST DATA:\n#{post_data}"
+      end
+
+      if range = opts[:paginate]
+        headers['Range'] = "objects=#{opts[:paginate]}"
       end
 
       response = case method

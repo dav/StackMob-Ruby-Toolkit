@@ -90,6 +90,11 @@ class StackMobUtilityScript
         @options[:version] = version
       end
 
+      @options[:paginate] = nil
+      opts.on( '-p', '--paginate #-#', 'The pagination range, zero based' ) do |value|
+        @options[:paginate] = value
+      end
+
       opts.on( '-C', '--no-colors', 'Don\'t output with ASNI colors' ) do
         @ansi_colors = false 
       end
@@ -332,7 +337,7 @@ class StackMobUtilityScript
         result = sm.get(@options[:model], :logout => true)
         dump_results(result)
       elsif @options[:read]
-        result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name], :expand_depth => @options[:expand])
+        result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name], :expand_depth => @options[:expand], :paginate => @options[:paginate])
         dump_results(result)
       elsif @options[:create]
         result = sm.post(@options[:model], :json => @options[:json])
