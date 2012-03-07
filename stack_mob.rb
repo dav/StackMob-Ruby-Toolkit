@@ -339,7 +339,7 @@ class StackMobUtilityScript
               id_param = @options[:id_name].nil? ? "#{@options[:model]}_id" : @options[:id_name]
               instances.each do |instance|
                 model_id = instance[id_param]
-                puts "Deleting #{model_id}"
+                puts "Deleting #{@options[:model]} #{model_id}"
                 result = sm.delete(@options[:model], :model_id => model_id, :id_name => @options[:id_name])
                 dump_results(result)
               end
