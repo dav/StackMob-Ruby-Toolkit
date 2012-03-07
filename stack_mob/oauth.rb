@@ -16,11 +16,11 @@ module StackMob
       end
       
       @consumer = OAuth::Consumer.new(config[deployment]["key"], config[deployment]["secret"], {
-          :site => "http://#{config["account"]}.stackmob.com"
+          :site => "https://#{config["account"]}.stackmob.com"
           })
 
       @consumer.http.set_debug_output($stderr) if debug
-      #@consumer.http.read_timeout = 90
+      #@consumer.http.read_timeout = 90   note apparently resetting the timeout to >90 here has no effect
 
       @access_token = OAuth::AccessToken.new @consumer
       #puts @consumer.http.instance_variable_get "@read_timeout"
@@ -49,6 +49,10 @@ module StackMob
           }.join('&')
           path = path + "?" + url_params
         end
+        
+        if opts[:expand_depth]
+          path += "&_expand=#{opts[:expand_depth]}"
+        end
       end
       path
     end
@@ -75,6 +79,10 @@ module StackMob
       post_data = opts[:json]
       if @debug && post_data
         STDERR.puts "POST DATA:\n#{post_data}"
+      end
+
+      if range = opts[:paginate]
+        headers['Range'] = "objects=#{opts[:paginate]}"
       end
 
       response = case method
