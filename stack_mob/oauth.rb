@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'oauth'
 require "json"
+require 'uri'
 
 require 'stack_mob/config'
 
@@ -54,6 +55,12 @@ module StackMob
           path += "&_expand=#{opts[:expand_depth]}"
         end
       end
+      
+      if qf_hash = opts[:query_filters]
+        params = qf_hash.keys.map {|key| "#{key}=#{URI.escape((qf_hash[key]).to_s, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))}" }.join('&')
+        path = path + '?' + params
+      end
+      
       path
     end
 
@@ -84,7 +91,6 @@ module StackMob
       if range = opts[:paginate]
         headers['Range'] = "objects=#{opts[:paginate]}"
       end
-
       response = case method
       when :get
         @access_token.get(path, headers)
