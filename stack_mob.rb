@@ -167,14 +167,19 @@ class StackMobUtilityScript
         @options[:logout] = true
       end
 
+      @options[:selection_properties] = nil
+      opts.on( '-S', '--selection-properties pro1,prop2,..', 'Filter out non-matching properties' ) do |props|
+        @options[:selection_properties] = props.split(/,/)
+      end
+
       @options[:method] = nil
       opts.on( '-M', '--method method', 'Custom method action, combine with --json if necessary' ) do |method|
         @options[:method] = method
       end
 
       @options[:expand] = nil
-      opts.on( '-X', '--expand count', 'Expand relationships depth' ) do |method|
-        @options[:expand] = method
+      opts.on( '-X', '--expand count', 'Expand relationships depth' ) do |value|
+        @options[:expand] = value
       end
 
       @options[:long_output] = false
@@ -283,6 +288,37 @@ class StackMobUtilityScript
     puts "----\nTotal: #{result.length}" 
   end
   
+  def filter_properties(array, properties)
+    array.each do |hash|
+      hash.select! { |key, value| properties.include?(key) }
+    end
+  end
+  
+  def get_all_with_pagination(stackmob, model, selection_properties)
+    pagination_size = 500
+    instance_hashes = []
+    pagination_start = 0
+
+    pagination_next = pagination_start + pagination_size
+    range = "#{pagination_start}-#{pagination_next-1}"
+    STDERR.puts "GET #{model} #{range}"
+    result_array = stackmob.get(model, :id_name => :all, :paginate => range )
+    
+    while result_array && result_array.is_a?(Array) && !result_array.empty?
+      if selection_properties
+        filter_properties(result_array, selection_properties)
+      end
+      pagination_start = pagination_next
+      instance_hashes += result_array
+
+      pagination_next = pagination_start + pagination_size
+      range = "#{pagination_start}-#{pagination_next-1}"
+      STDERR.puts "GET #{model} #{range}"
+      result_array = stackmob.get(model, :id_name => :all, :paginate => range )
+    end
+    return instance_hashes
+  end
+  
   def run
     unless @options.any_key? [:model,:listapi,:method,:push,:login,:logout]
       puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
@@ -350,7 +386,7 @@ class StackMobUtilityScript
           result = sm.delete(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name])
           dump_results(result)
         else
-          instances = sm.get(@options[:model], :model_id => :all)
+          instances = get_all_with_pagination(sm, @options[:model], @options[:selection_properties])
           if (instances.length > 0)
             unless @options[:yes_delete]
               puts "Are you sure you want to delete all #{instances.size} instances of #{@options[:model]}? (yes|NO)"

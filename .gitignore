@@ -1,2 +1,7 @@
-config.json
 current_stackmob_login_cookie.txt
+config.json
+user.json
+signup.json
+user.json.erb
+signup.json.erb
+*.1
