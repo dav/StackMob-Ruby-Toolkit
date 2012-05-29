@@ -305,6 +305,7 @@ class StackMobUtilityScript
     result_array = stackmob.get(model, :id_name => :all, :paginate => range )
     
     while result_array && result_array.is_a?(Array) && !result_array.empty?
+      STDERR.puts "GOT #{result_array.size}"
       if selection_properties
         filter_properties(result_array, selection_properties)
       end
@@ -316,6 +317,7 @@ class StackMobUtilityScript
       STDERR.puts "GET #{model} #{range}"
       result_array = stackmob.get(model, :id_name => :all, :paginate => range )
     end
+    STDERR.puts "TOTAL IS #{instance_hashes.size}"
     return instance_hashes
   end
   
@@ -373,8 +375,13 @@ class StackMobUtilityScript
         result = sm.get(@options[:model], :logout => true)
         dump_results(result)
       elsif @options[:read]
-        result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name], :expand_depth => @options[:expand], :paginate => @options[:paginate])
-        dump_results(result)
+        if @options[:id] != :all
+          result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name], :expand_depth => @options[:expand], :paginate => @options[:paginate])
+          dump_results(result)
+        else
+          instances = get_all_with_pagination(sm, @options[:model], @options[:selection_properties])
+          dump_results(instances)
+        end
       elsif @options[:create]
         result = sm.post(@options[:model], :json => @options[:json])
         dump_results(result)
