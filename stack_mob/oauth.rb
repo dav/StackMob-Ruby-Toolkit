@@ -17,7 +17,8 @@ module StackMob
       end
       
       @consumer = OAuth::Consumer.new(config[deployment]["key"], config[deployment]["secret"], {
-          :site => "https://#{config["account"]}.stackmob.com"
+          #:site => "https://#{config["account"]}.stackmob.com"
+          :site => "https://api.mob1.stackmob.com"
           })
 
       @consumer.http.set_debug_output($stderr) if debug
@@ -29,7 +30,8 @@ module StackMob
 
     def model_path(method, model, opts)
       model_id = opts[:model_id]
-      path = "/api/#{@version}/#{@appname}/#{model}"
+      #path = "/api/#{@version}/#{@appname}/#{model}"
+      path = "/#{model}"
 
       if opts[:password] 
         # must be a login attempt (TODO ewwww)
@@ -91,6 +93,9 @@ module StackMob
       if range = opts[:paginate]
         headers['Range'] = "objects=#{opts[:paginate]}"
       end
+      
+      headers["Accept"] = "application/vnd.stackmob+json; version=#{@version}"
+      
       response = case method
       when :get
         @access_token.get(path, headers)
