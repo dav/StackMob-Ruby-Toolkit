@@ -47,7 +47,7 @@ module StackMob
         elsif opts[:json]
           params = JSON.parse(opts[:json])
           url_params = params.collect{|k,v| 
-            value = CGI.escape("#{v}")
+            value = opts[:custom_code_json] ? v : CGI.escape("#{v}")
             "#{k}=#{value}"
           }.join('&')
           path = path + "?" + url_params
@@ -87,7 +87,7 @@ module StackMob
 
       post_data = opts[:json]
       if @debug && post_data
-        STDERR.puts "POST DATA:\n#{post_data}"
+        STDERR.puts "REQUEST DATA:\n#{post_data}"
       end
 
       if range = opts[:paginate]

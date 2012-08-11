@@ -211,6 +211,34 @@ class StackMobUtilityScript
         end
       end
 
+      opts.on( '-J', '--json-param-string string', 'Special CGI escape conversion for custom code GET' ) do |string|
+        # there should be one key and one value in a hash. The value will be turned into a json string and cgi escaped
+        # so that it will form a correct custom code GET. This kludge should go away when stackmob supports custom code POST, etc
+        begin
+          hash = JSON.parse(string)
+        rescue JSON::ParserError => err
+          puts "Bad -J data"
+          p err
+          exit
+        end
+        
+        unless hash.is_a? Hash
+          puts "Bad format (not a hash) for -J option"
+          exit
+        end
+        
+        unless hash.keys.size == 1
+          puts "Bad format (need exactly one key) for -J option"
+          exit
+        end
+
+        key = hash.keys.first
+        value = hash[key]
+        param_value = CGI::escape value.to_json
+        @options[:json] = ({ hash.keys.first => param_value}).to_json
+        @options[:custom_code_json] = true
+      end
+
       @options[:date_string] = false
       opts.on( '--date-string', 'Convert dates numbers to strings in output' ) do
         @options[:date_string] = true
@@ -350,7 +378,7 @@ class StackMobUtilityScript
       result = sm.get 'listapi'
       dump_results(result)
     elsif method = @options[:method]
-      result = sm.get(method, :json => @options[:json])
+      result = sm.get(method, :json => @options[:json], :custom_code_json => @options[:custom_code_json])
       dump_results(result)
     else
       valid_actions = [:read,:delete,:create,:update,:login,:logout,:generate]
