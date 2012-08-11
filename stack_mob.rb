@@ -275,6 +275,8 @@ class StackMobUtilityScript
           if @ansi_colors
             if k =~ /error/ || k =~ /^debug$/
               output_row = Color.red( output_row )
+            elsif k == 'sm_owner'
+              output_row = Color.cyan( output_row )
             elsif k =~ /_id$/
               output_row = Color.yellow( output_row )
             end
