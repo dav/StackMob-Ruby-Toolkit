@@ -18,7 +18,7 @@ module StackMob
       
       @consumer = OAuth::Consumer.new(config[deployment]["key"], config[deployment]["secret"], {
           #:site => "https://#{config["account"]}.stackmob.com"
-          :site => "https://api.mob1.stackmob.com"
+          :site => "https://api.stackmob.com"
           })
 
       @consumer.http.set_debug_output($stderr) if debug
