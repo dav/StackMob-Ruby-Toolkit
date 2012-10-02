@@ -2,6 +2,7 @@
 require 'optparse'
 require 'erb'
 require 'rubygems'
+require 'csv'
 
 
 $LOAD_PATH << File.dirname(__FILE__)
@@ -187,6 +188,11 @@ class StackMobUtilityScript
         @options[:long_output] = true
       end
 
+      @options[:csv] = false
+      opts.on( '--csv', 'CSV output' ) do
+        @options[:csv] = true
+      end
+
       @options[:json] = nil
       opts.on( '-j', '--json file-or-string', 'JSON file or string containing the request params or model properties' ) do |file_or_string|
         if File.exists?(file_or_string)
@@ -264,12 +270,26 @@ class StackMobUtilityScript
     end
   end
   
+  def dump_csv(results)
+    # pick out all keys
+    keys = []
+    results.each do |hash|
+      keys += hash.keys
+      keys.uniq!
+    end
+
+    puts CSV.generate { |csv| csv << keys }
+    
+    results.each do |hash|
+      puts CSV.generate { |csv| csv << keys.map{ |key| hash[key] } }
+    end
+  end
 
   def dump_results(result)
     return if result.nil?
-    
+
     result = [result] if result.is_a?(Hash)
-    
+
     if @options[:sort_by]
       field = @options[:sort_by]
       if result.any? { |h| h[field].nil? }
@@ -279,43 +299,48 @@ class StackMobUtilityScript
         result.sort! { |a,b| a[field] <=> b[field] }
       end
     end
-    
-    result.each do |hash|
-      puts '--'
-      if hash.keys.length>0
-        max_length = hash.keys.max_by{ |k| k.length }.length
-        hash.each do |k,v|
-          if @options[:long_output] && v.is_a?(Hash)
-            v = PP.pp(v,"")
-          else
-            v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
-          end
-        
-          if k =~ /date$/ && @options[:date_string]
-            time = Time.at v.to_i/1000.0
-            unless time.nil?
-              v = time.strftime "%z %Y-%m-%d %H:%M:%S"
-            end
-          end
-        
-          output_row = sprintf("%#{max_length+1}s %s", k, v)
 
-          if @ansi_colors
-            if k =~ /error/ || k =~ /^debug$/
-              output_row = Color.red( output_row )
-            elsif k == 'sm_owner'
-              output_row = Color.cyan( output_row )
-            elsif k =~ /_id$/
-              output_row = Color.yellow( output_row )
-            end
-          end
-          puts output_row
-        end
-      else
-        puts 'empty response hash'
-      end
+    if @options[:csv]
+      dump_csv result
+      return
     end
-    puts "----\nTotal: #{result.length}" 
+
+    result.each do |hash|
+        puts '--'
+        if hash.keys.length>0
+            max_length = hash.keys.max_by{ |k| k.length }.length
+            hash.each do |k,v|
+                if @options[:long_output] && v.is_a?(Hash)
+                  v = PP.pp(v,"")
+                else
+                  v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
+                end
+
+                if k =~ /date$/ && @options[:date_string]
+                  time = Time.at v.to_i/1000.0
+                  unless time.nil?
+                    v = time.strftime "%z %Y-%m-%d %H:%M:%S"
+                  end
+                end
+
+                output_row = sprintf("%#{max_length+1}s %s", k, v)
+
+                if @ansi_colors
+                  if k =~ /error/ || k =~ /^debug$/
+                    output_row = Color.red( output_row )
+                  elsif k == 'sm_owner'
+                    output_row = Color.cyan( output_row )
+                  elsif k =~ /_id$/
+                    output_row = Color.yellow( output_row )
+                  end
+                end
+              puts output_row
+            end
+        else
+          puts 'empty response hash'
+        end
+      end
+    puts "----\nTotal: #{result.length}"
   end
   
   def filter_properties(array, properties)
