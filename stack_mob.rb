@@ -405,7 +405,8 @@ class StackMobUtilityScript
       result = sm.get 'listapi'
       dump_results(result)
     elsif method = @options[:method]
-      result = sm.get(method, :json => @options[:json], :custom_code_json => @options[:custom_code_json])
+      opts = @options.select {|k,v| [:json, :custom_code_json, :deployment].include?(k) }
+      result = sm.get(method, opts)
       dump_results(result)
     else
       valid_actions = [:read,:delete,:create,:update,:login,:logout,:generate]
@@ -415,37 +416,52 @@ class StackMobUtilityScript
       end
 
       if @options[:push]
-        result = sm.post(:push, :json => @options[:json])
+        opts = @options.select {|k,v| [:deployment, :json].include?(k) }
+        result = sm.post(:push, opts)
         dump_results(result)
       elsif @options[:login]
         (username, password) = @options[:login].split(/\//)
         if password.nil?
           # assuming it is a fb_at
-          result = sm.get('user/facebookLogin', :json => %Q({"fb_at":"#{@options[:login]}"}))
+          opts = @options.select {|k,v| [:deployment].include?(k) }
+          opts[:json] = %Q({"fb_at":"#{@options[:login]}"})
+          result = sm.get('user/facebookLogin', opts)
         else
-          result = sm.get(@options[:model], :model_id => username, :id_name => @options[:id_name], :password => password)
+          opts = @options.select {|k,v| [:deployment, :id_name].include?(k) }
+          opts[:model_id] = username
+          opts[:password] = password
+          result = sm.get(@options[:model], opts)
         end
         dump_results(result)
       elsif @options[:logout]
-        result = sm.get(@options[:model], :logout => true)
+        opts = @options.select {|k,v| [:deployment].include?(k) }
+        opts[:logout] = true
+        result = sm.get(@options[:model], opts)
         dump_results(result)
       elsif @options[:read]
         if @options[:id] != :all
-          result = sm.get(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name], :expand_depth => @options[:expand], :paginate => @options[:paginate])
+          opts = @options.select {|k,v| [:deployment, :id_name, :paginate].include?(k) }
+          opts[:model_id] = @options[:id]
+          opts[:expand_depth] = @options[:expand]
+          result = sm.get(@options[:model], opts)
           dump_results(result)
         else
           instances = get_all_with_pagination(sm, @options[:model], @options[:selection_properties])
           dump_results(instances)
         end
       elsif @options[:create]
-        result = sm.post(@options[:model], :json => @options[:json])
+        opts = @options.select {|k,v| [:deployment, :json].include?(k) }
+        result = sm.post(@options[:model], opts)
         dump_results(result)
       elsif @options[:update]
-        result = sm.put(@options[:model], :json => @options[:json])
+        opts = @options.select {|k,v| [:deployment, :json].include?(k) }
+        result = sm.put(@options[:model], opts)
         dump_results(result)
       elsif @options[:delete]
         if @options[:id] != :all
-          result = sm.delete(@options[:model], :model_id => @options[:id], :id_name => @options[:id_name])
+          opts = @options.select {|k,v| [:deployment, :id_name].include?(k) }
+          opts[:model_id] = @options[:id]
+          result = sm.delete(@options[:model], opts)
           dump_results(result)
         else
           instances = get_all_with_pagination(sm, @options[:model], @options[:selection_properties])
@@ -462,7 +478,9 @@ class StackMobUtilityScript
               instances.each do |instance|
                 model_id = instance[id_param]
                 puts "Deleting #{@options[:model]} #{model_id}"
-                result = sm.delete(@options[:model], :model_id => model_id, :id_name => @options[:id_name])
+                opts = @options.select {|k,v| [:deployment, :id_name].include?(k) }
+                opts[:model_id] = model_id
+                result = sm.delete(@options[:model], opts)
                 dump_results(result)
               end
             else
@@ -474,7 +492,8 @@ class StackMobUtilityScript
         end
       elsif @options[:generate]
         # get all model api
-        result = sm.get 'listapi'
+        opts = @options.select {|k,v| [:deployment].include?(k) }
+        result = sm.get 'listapi', opts
         modelHash = result[@options[:model]]
         if modelHash.nil?
           puts "Unable to find API for Model \"#{@options[:model]}\""

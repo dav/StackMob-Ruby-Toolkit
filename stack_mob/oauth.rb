@@ -77,7 +77,7 @@ module StackMob
       headers = {}
       headers['Content-type'] = 'application/json' if opts[:json]
       
-      cookie_file = "current_stackmob_login_cookie.txt"
+      cookie_file = (opts[:deployment] == 'production') ? "current_stackmob_production_login_cookie.txt" : "current_stackmob_sandbox_login_cookie.txt"
       
       if File.exists?(cookie_file)
         File.open(cookie_file, 'r') do |f|
