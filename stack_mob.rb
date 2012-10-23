@@ -153,6 +153,11 @@ class StackMobUtilityScript
         @options[:delete] = true
       end
 
+      @options[:force_post] = false
+      opts.on( '-P', '--post', 'Force custom method to use POST' ) do
+        @options[:force_post] = true
+      end
+
       @options[:yes_delete] = false
       opts.on( '--yes', 'Yes, delete all!' ) do
         @options[:yes_delete] = true
@@ -406,7 +411,11 @@ class StackMobUtilityScript
       dump_results(result)
     elsif method = @options[:method]
       opts = @options.select {|k,v| [:json, :custom_code_json, :deployment].include?(k) }
-      result = sm.get(method, opts)
+      if @options[:force_post]
+        result = sm.post(method, opts)
+      else
+        result = sm.get(method, opts)
+      end
       dump_results(result)
     else
       valid_actions = [:read,:delete,:create,:update,:login,:logout,:generate]
