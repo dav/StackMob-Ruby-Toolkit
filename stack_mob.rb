@@ -311,7 +311,7 @@ class StackMobUtilityScript
     end
 
     result.each do |hash|
-        puts '--'
+        puts "--"
         if hash.keys.length>0
             max_length = hash.keys.max_by{ |k| k.length }.length
             hash.each do |k,v|
@@ -321,8 +321,12 @@ class StackMobUtilityScript
                   v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
                 end
 
-                if k =~ /date$/ && @options[:date_string]
-                  time = Time.at v.to_i/1000.0
+                if @options[:date_string]
+                  if k =~ /date$/
+                    time = Time.at v.to_i/1000.0
+                  elsif k =~ /_time$/
+                    time = Time.at v.to_i
+                  end
                   unless time.nil?
                     v = time.strftime "%z %Y-%m-%d %H:%M:%S"
                   end
