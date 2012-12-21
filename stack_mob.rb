@@ -335,7 +335,7 @@ class StackMobUtilityScript
                 output_row = sprintf("%#{max_length+1}s %s", k, v)
 
                 if @ansi_colors
-                  if k =~ /error/ || k =~ /^debug$/
+                  if k =~ /error/ || k =~ /^debug$/ || k =~ /^remove/
                     output_row = Color.red( output_row )
                   elsif k == 'sm_owner'
                     output_row = Color.cyan( output_row )
