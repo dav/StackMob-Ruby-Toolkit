@@ -441,8 +441,8 @@ class StackMobUtilityScript
           result = sm.get('user/facebookLogin', opts)
         else
           opts = @options.select {|k,v| [:deployment, :id_name].include?(k) }
-          opts[:model_id] = username
-          opts[:password] = password
+          opts[:model_id] = CGI.escape(username)
+          opts[:password] = CGI.escape(password)
           result = sm.get(@options[:model], opts)
         end
         dump_results(result)
