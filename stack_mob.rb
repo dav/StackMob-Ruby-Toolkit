@@ -286,10 +286,27 @@ class StackMobUtilityScript
     puts CSV.generate { |csv| csv << keys }
     
     results.each do |hash|
+      hash.each do |k, v|
+        hash[k] = options_transform(k, v)
+      end
       puts CSV.generate { |csv| csv << keys.map{ |key| hash[key] } }
     end
   end
 
+  def options_transform(k,v)
+    if @options[:date_string]
+      if k =~ /date$/
+        time = Time.at v.to_i/1000.0
+      elsif k =~ /_time$/
+        time = Time.at v.to_i
+      end
+      unless time.nil?
+        v = time.strftime "%z %Y-%m-%d %H:%M:%S"
+      end
+    end
+    return v
+  end
+  
   def dump_results(result)
     return if result.nil?
 
@@ -315,34 +332,18 @@ class StackMobUtilityScript
         if hash.keys.length>0
             max_length = hash.keys.max_by{ |k| k.length }.length
             hash.each do |k,v|
-                if @options[:long_output] && v.is_a?(Hash)
-                  v = PP.pp(v,"")
-                else
-                  v = v.inspect unless k == 'trace' # this allows the \n in the debug trace to be rendered properly, but nil things will get nil instead of blank
-                end
+              v = options_transform(k, v)
+              output_row = sprintf("%#{max_length+1}s %s", k, v)
 
-                if @options[:date_string]
-                  if k =~ /date$/
-                    time = Time.at v.to_i/1000.0
-                  elsif k =~ /_time$/
-                    time = Time.at v.to_i
-                  end
-                  unless time.nil?
-                    v = time.strftime "%z %Y-%m-%d %H:%M:%S"
-                  end
+              if @ansi_colors
+                if k =~ /error/ || k =~ /^debug$/ || k =~ /^remove/
+                  output_row = Color.red( output_row )
+                elsif k == 'sm_owner'
+                  output_row = Color.cyan( output_row )
+                elsif k =~ /_id$/
+                  output_row = Color.yellow( output_row )
                 end
-
-                output_row = sprintf("%#{max_length+1}s %s", k, v)
-
-                if @ansi_colors
-                  if k =~ /error/ || k =~ /^debug$/ || k =~ /^remove/
-                    output_row = Color.red( output_row )
-                  elsif k == 'sm_owner'
-                    output_row = Color.cyan( output_row )
-                  elsif k =~ /_id$/
-                    output_row = Color.yellow( output_row )
-                  end
-                end
+              end
               puts output_row
             end
         else
