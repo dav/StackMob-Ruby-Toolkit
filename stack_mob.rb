@@ -10,6 +10,13 @@ require 'stack_mob/config'
 require 'stack_mob/oauth'
 require 'stack_mob/java_class_factory'
 
+# for --use-cache option need to require classes that will be unmarshalled from
+# the ./cache/(model)s.(sandbox|production).cache file
+# TODO in that hypothetical day in the future when I refactor all this stuff, make 
+#     this some sort of plugin, on the remote chance that anyone else gets this stuff from github.
+$LOAD_PATH << Dir.pwd
+require "meexo/meexo"
+
 #require 'ruby-debug'
 require "pp"
 
@@ -196,6 +203,11 @@ class StackMobUtilityScript
       @options[:csv] = false
       opts.on( '--csv', 'CSV output' ) do
         @options[:csv] = true
+      end
+
+      @options[:use_cache] = false
+      opts.on( '--use-cache', 'Use cache dir instead of stackmob for model reads' ) do
+        @options[:use_cache] = true
       end
 
       @options[:json] = nil
@@ -386,6 +398,35 @@ class StackMobUtilityScript
     return instance_hashes
   end
   
+  def get_from_cache(model, options)
+    STDERR.puts "Missiong options" unless options
+    cache_filename = "cache/#{model}s.#{options[:deployment]}.cache" # model+'s' is convention!
+    result = nil
+    if File.exists? cache_filename
+       File.open(cache_filename, 'rb') do |file|
+         STDERR.puts "Unpacking #{cache_filename}"
+         result = Marshal.load(file)
+       end
+    else
+      STDERR.puts "Cannot use cache, no such file: #{cache_filename}"
+      exit
+    end
+    if result.is_a? Hash
+      # should be a hash of {model_id => model, ...}
+      result = result.values
+    end
+    hashes = result.map do |model|
+      if model.is_a? Meexo::Model
+        model.to_hash
+      else
+        pp model # bad cache!
+        exit
+        nil
+      end
+    end
+    hashes
+  end
+  
   def run
     unless @options.any_key? [:model,:listapi,:method,:push,:login,:logout]
       puts "Not enough options specified. Need -m, -M or -l at minimum. Try -h"
@@ -456,11 +497,23 @@ class StackMobUtilityScript
         if @options[:id] != :all
           opts = @options.select {|k,v| [:deployment, :id_name, :paginate].include?(k) }
           opts[:model_id] = @options[:id]
-          opts[:expand_depth] = @options[:expand]
-          result = sm.get(@options[:model], opts)
+          if @options[:use_cache]
+            # TODO this logic is also in the oauth class. Should be extracted.
+            id_field_name = opts[:id_name].nil? ? "#{@options[:model]}_id" : opts[:id_name]
+            # TODO get_from_cache should just handle these options itself
+            instances = get_from_cache(@options[:model], opts)
+            result = instances.find {|model_hash| model_hash[id_field_name] == opts[:model_id] }
+          else
+            opts[:expand_depth] = @options[:expand]
+            result = sm.get(@options[:model], opts)
+          end
           dump_results(result)
         else
-          instances = get_all_with_pagination(sm, @options[:model], @options[:selection_properties])
+          if @options[:use_cache]
+            instances = get_from_cache(@options[:model], @options)
+          else
+            instances = get_all_with_pagination(sm, @options[:model], @options[:selection_properties])
+          end
           dump_results(instances)
         end
       elsif @options[:create]
