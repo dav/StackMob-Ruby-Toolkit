@@ -10,12 +10,19 @@ require 'stack_mob/config'
 require 'stack_mob/oauth'
 require 'stack_mob/java_class_factory'
 
-# for --use-cache option need to require classes that will be unmarshalled from
-# the ./cache/(model)s.(sandbox|production).cache file
-# TODO in that hypothetical day in the future when I refactor all this stuff, make 
-#     this some sort of plugin, on the remote chance that anyone else gets this stuff from github.
-$LOAD_PATH << Dir.pwd
-require "meexo/meexo"
+# for --use-cache option we need to require classes that will be unmarshalled from
+# the ./cache/(model)s.(sandbox|production).cache file. The capability to deal
+# with these classes can be loaded by creating a local.rb file.
+#
+# TODO add option to easily create the cache from this script as well.
+#
+# For example my git-ignored local.rb file has these two lines:
+#       $LOAD_PATH << Dir.pwd
+#       require "meexo/meexo" 
+local_capabilities_file = File.join(File.dirname(__FILE__),'local.rb')
+if File.exists? local_capabilities_file
+  require local_capabilities_file
+end
 
 #require 'ruby-debug'
 require "pp"
