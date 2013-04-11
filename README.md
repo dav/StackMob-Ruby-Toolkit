@@ -6,6 +6,8 @@ A not very clever set of tools for working with StackMob.
 
 _Warning: this is something I whipped up for my own use. Use at your own risk._
 
+_Developed on ruby 1.9.3_
+
 Currently, this is a set of ruby scripts that allows you to create, read and delete your 
 StackMob data from the command line.
 
