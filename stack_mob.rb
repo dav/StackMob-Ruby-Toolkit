@@ -378,12 +378,12 @@ class StackMobUtilityScript
     end
   end
   
-  def get_all_with_pagination(stackmob, model, selection_properties)
+  def get_all_with_pagination(stackmob, model, selection_properties, id_field_name=nil)
     pagination_size = 500
     instance_hashes = []
     pagination_start = 0
 
-    id_field_name = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
+    id_field_name = "#{model}_id" if id_field_name.nil?
 
     pagination_next = pagination_start + pagination_size
     range = "#{pagination_start}-#{pagination_next-1}"
