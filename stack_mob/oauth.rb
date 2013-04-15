@@ -107,6 +107,25 @@ module StackMob
         @access_token.put(path, post_data, headers)
       end
 
+      response_range = response["Content-Range"]
+      unless response_range.nil? || response_range == ''
+        if response_range =~ /objects (\d+)-(\d+)\/\d+/
+          range_start = $1
+          range_end = $2
+        end
+        STDERR.puts "GOT #{model} #{response_range}"
+      end
+      
+      if opts[:paginate]
+        if opts[:paginate] =~ /^(\d+)-(\d+)$/
+          paginate_start = $1
+          paginate_end = $2
+        end
+        if response_range && response_range != 'objects *' &&  response_range != '' &&  (paginate_start != range_start || paginate_end != range_end)
+          STDERR.puts "*** WARNING: Requested range #{opts[:paginate]} != response range '#{response_range}'"
+        end
+      end
+      
       cookie = response["Set-Cookie"]
       unless cookie.nil?
         File.open(cookie_file,'w') do |f|
@@ -114,19 +133,28 @@ module StackMob
         end
       end
 
-      if response.is_a? Net::HTTPOK
+      if response.code =~ /^2/
+        result = nil
         if response.body && response.body.length>0
           # StackMob apparently sometimes does not return JSON
           if response.body =~ /^Success/
-            return {"response" => response.body}
+            result = {"response" => response.body}
           else
-            return JSON.parse(response.body)
+            result = JSON.parse(response.body)
           end
-        else
-          return nil
         end
+        
+        if result.is_a?(Array) && range_start && range_end
+          # verify range fulfilled
+          expected_size = range_end.to_i - range_start.to_i + 1 # because the response is 0-499 for 500 items
+          if result.size != expected_size
+            STDERR.puts "*** WARNING: Result shuld be size=#{expected_size} but it is size=#{result.size}"
+          end
+        end
+        return result
       end
-
+      
+      # if we got this far there is an error
       # handle error
       if (response.body && response.body.length>0)
         error_hash = {}
