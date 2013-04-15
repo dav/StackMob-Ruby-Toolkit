@@ -383,10 +383,12 @@ class StackMobUtilityScript
     instance_hashes = []
     pagination_start = 0
 
+    id_field_name = opts[:id_name].nil? ? "#{model}_id" : opts[:id_name]
+
     pagination_next = pagination_start + pagination_size
     range = "#{pagination_start}-#{pagination_next-1}"
     STDERR.puts "GET #{model} #{range}"
-    result_array = stackmob.get(model, :id_name => :all, :paginate => range )
+    result_array = stackmob.get(model, :id_name => :all, :paginate => range, :order_by => id_field_name )
     
     while result_array && result_array.is_a?(Array) && !result_array.empty?
       STDERR.puts "GOT #{result_array.size}"
@@ -399,7 +401,7 @@ class StackMobUtilityScript
       pagination_next = pagination_start + pagination_size
       range = "#{pagination_start}-#{pagination_next-1}"
       STDERR.puts "GET #{model} #{range}"
-      result_array = stackmob.get(model, :id_name => :all, :paginate => range )
+      result_array = stackmob.get(model, :id_name => :all, :paginate => range, :order_by => id_field_name )
     end
     STDERR.puts "TOTAL IS #{instance_hashes.size}"
     return instance_hashes

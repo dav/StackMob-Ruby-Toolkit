@@ -94,6 +94,10 @@ module StackMob
         headers['Range'] = "objects=#{opts[:paginate]}"
       end
       
+      if opts[:order_by]
+        headers['X-StackMob-OrderBy'] = opts[:order_by]
+      end
+      
       headers["Accept"] = "application/vnd.stackmob+json; version=#{@version}"
       
       response = case method
